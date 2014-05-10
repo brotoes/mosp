@@ -1,0 +1,5 @@
+      [paste.app_factory]
+      main = mosp:main
+      [console_scripts]
+      initialize_mosp_db = mosp.scripts.initializedb:main
+      

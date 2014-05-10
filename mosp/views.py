@@ -5,17 +5,27 @@ from sqlalchemy.exc import DBAPIError
 
 from sqlalchemy import func
 
+from queries import *
+
+from pyramid.httpexceptions import (
+    HTTPForbidden,
+    HTTPFound,
+    HTTPNotFound,
+    )
+
 from .models import (
     DBSession,
     Location
     )
 
+import open_data
 
 @view_config(route_name='home', renderer='templates/home.pt')
 def home(request):
     #TODO get list of cities and return links
-
-    return {}
+    locations = get_locations()
+    print locations
+    return {'locations': locations}
 
 
 @view_config(route_name='map', renderer='templates/map.pt')
@@ -24,13 +34,12 @@ def map(request):
 
     city = request.matchdict['city']
 
-    location = DBSession.query(
-                            Location.lat,
-                            Location.long,
-                        ).filter(
-                            func.lower(Location.name) ==
-                            func.lower(city.upper())
-                        ).first()
+    location = get_location(city)
+
+    if location == HTTPNotFound():
+        return location
+    elif location == None:
+        return HTTPNotFound()
 
     return {
             'api_key':api_key,
@@ -38,6 +47,11 @@ def map(request):
             'longitude':location[1],
             }
 
+@view_config(route_name='refresh')
+def refresh(request):
+    
+
+    return {}
 
 conn_err_msg = """\
 Pyramid is having a problem using your SQL database.  The problem

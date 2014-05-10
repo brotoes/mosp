@@ -1,0 +1,56 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+       xmlns:tal="http://xml.zope.org/namespaces/tal"
+       xmlns:metal="http://xml.zope.org/namespaces/metal"
+       lang="${request.locale_name}">
+  <head>
+  <title>MosP: Mosquito Project</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Brock Toews for CHOICE Web Marketing">
+  <meta name="keywords" content="mosquito forecast mosp project" />
+  <meta name="description" content="Mosquito Project: Mosquito activity forecast" />
+  
+  <link rel="shortcut icon"
+        href="${request.static_url('obamacare:static/mosquito-dark.png')}" />
+  <link rel="stylesheet" 
+        href="${request.static_url('mosp:static/style.css')}" 
+        type="text/css" media="screen" charset="utf-8" />
+ 
+
+  <!--[if lte IE 6]>
+  <link rel="stylesheet" href="${request.static_url('obamacare:static/ie6.css')}" type="text/css" media="screen" charset="utf-8" />
+  <![endif]-->
+</head>
+<body> 
+	<div>
+		<div id='header'>
+			<div tal:condition="logged_in"> 
+				<div metal:use-macro="load: toolbar.pt"></div>
+			</div>
+		</div>
+		
+		
+		<div id='content'>
+			<div tal:condition="displaysuccess" tal:repeat="message displaysuccess">
+				<div class="display-success" onclick="this.parentNode.removeChild(this);">
+					${message}
+				</div>
+			</div>
+			<div tal:condition="displayerror"  tal:repeat="message displayerror"> 
+				<div class="display-error" onclick="this.parentNode.removeChild(this);">
+					ERROR: ${message}
+				</div>
+
+			</div>
+		
+	   		<div metal:define-slot="content"></div>
+	   	</div>
+		
+
+		<div id="footer">
+			<span>Copyright &copy; 2014-2020, CHOICE Online Marketing Group</span>
+		</div>
+	</div>
+</body>
+ </html>

@@ -25,25 +25,25 @@ Base = declarative_base()
 class Location(Base):
     __tablename__ = 'locations'
     name = Column(CHAR(80), primary_key=True)
-    lat = Column(Float, nullable=False)
-    long = Column(Float, nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
 
-    def __init__(self, name, lat, long):
+    def __init__(self, name, latitude, longitude):
         self.name = name
-        self.lat = lat
-        self.long = long
+        self.latitude = latitude
+        self.longitude = longitude
 
 class Gauge(Base):
     __tablename__ = 'gauges'
     gauge_id = Column(Integer, primary_key=True)
-    lat = Column(Float, nullable=False)
-    long = Column(Float, nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
     quadrant = Column(CHAR(2), nullable=False)
     
-    def __init__(self, gauge_id, lat, long, quadrant):
+    def __init__(self, gauge_id, latitude, longitude, quadrant):
         self.gauge_id = gauge_id
-        self.lat = lat
-        self.long = long
+        self.latitude = latitude
+        self.longitude = longitude
         self.quadrant = quadrant
 
 

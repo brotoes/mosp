@@ -7,13 +7,15 @@
     <meta name="description" content="The Mosquito Project Forecast Application">
     <meta name="author" content="Brock Toews">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <link rel="shortcut icon"
+          href="${request.static_url('mosp:static/mosquito-dark.png')}">
     <title>The Mosquito Project</title>
 
     <!-- Bootstrap core CSS -->
     <link href="//oss.maxcdn.com/libs/twitter-bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom styles for this template -->
   <link
-    href="${request.static_url('mosp:static/theme.css')" rel="stylesheet">
+    href="${request.static_url('mosp:static/theme.css')}" rel="stylesheet">
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
       <script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
@@ -22,16 +24,20 @@
     <style type="text/css">
       html { height: 100% }
       body { height: 100%; margin: 0; padding: 0 }
-      #map-canvas { height: 100% }
+      #map-canvas { height: 100%}
     </style>
     <script type="text/javascript"
             src="https://maps.googleapis.com/maps/api/js?key=${api_key}&sensor=false">
     </script>
-    <script type="text/javascript">
+    <script type="text/javascript"> 
         function initialize() {
             var mapOptions = {
                 center: new google.maps.LatLng(${latitude}, ${longitude}),
-                zoom: 11
+                zoom: 11,
+                scrollwheel: false,
+                disableDefaultUI: true,
+                draggable: false,
+                disableDoubleClickZoom: true
             };
             var map = new google.maps.Map(document.getElementById("map-canvas"),
                                           mapOptions);
@@ -42,8 +48,9 @@
 
   <body>
     <div id="map-canvas"/>
-
-
+    <div class="container">
+      Why does this not show up?
+    </div>
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
