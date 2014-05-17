@@ -24,33 +24,97 @@
     <style type="text/css">
       html { height: 100% }
       body { height: 100%; margin: 0; padding: 0 }
-      #map-canvas { height: 100%}
+      #map-canvas { height: 100% }
+      #logo-panel {
+        position: absolute;
+        top: 5px;
+        left: 185px;
+        color: #999;
+        margin-left: -180px;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+      }
     </style>
     <script type="text/javascript"
             src="https://maps.googleapis.com/maps/api/js?key=${api_key}&sensor=false">
     </script>
     <script type="text/javascript"> 
-        function initialize() {
-            var mapOptions = {
-                center: new google.maps.LatLng(${latitude}, ${longitude}),
-                zoom: 11,
-                scrollwheel: false,
-                disableDefaultUI: true,
-                draggable: false,
-                disableDoubleClickZoom: true
-            };
-            var map = new google.maps.Map(document.getElementById("map-canvas"),
-                                          mapOptions);
-        }
-        google.maps.event.addDomListener(window, 'load', initialize);
+function initialize() {
+  var location_center = new google.maps.LatLng(${center[0]}, ${center[1]});
+  var mapOptions = {
+    center: location_center,
+    zoom: 10,
+    scrollwheel: false,
+    disableDefaultUI: true,
+    draggable: false,
+    disableDoubleClickZoom: true
+  };
+  var map = new google.maps.Map(document.getElementById("map-canvas"),
+                                mapOptions);
+  var gauges = [];
+  var readings = ${readings};
+  var elements = ${gauges};
+  for (var i = 0; i < ${len(gauges)}; i ++) {
+    var element = elements[i]
+    var gauge = new google.maps.Marker({
+      position: new google.maps.LatLng(element[1], element[2]),
+      map: map,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale:5
+      },
+      title: 'gauge-' + readings[i][1]
+    });
+    gauges.push(gauge);
+  }
+
+  var counts = ${counts};
+  var max_count = 0;
+  for (var key in counts) {
+    if (counts[key] > max_count) {
+      max_count = counts[key];
+    }
+  }
+  console.log(counts);
+  var quadrants = ${quadrants}
+  for (var i = 0; i < ${len(quadrants)}; i ++) {
+    var count = counts[quadrants[i][4]]
+    var blue = count/max_count;
+    blue *= 255*blue*blue;
+    blue = Math.floor(blue);
+    blue = blue.toString(16);
+    blue = "#0000" + blue;
+    var rectangle = new google.maps.Rectangle({
+      strokeColor: '#0000FF',
+      strokeOpacity: 1,
+      strokeWeight: 2,
+      fillColor: blue,
+      fillOpacity: 0,
+      map: map,
+      bounds: new google.maps.LatLngBounds(
+        new google.maps.LatLng(quadrants[i][0], quadrants[i][1]),
+        new google.maps.LatLng(quadrants[i][2], quadrants[i][3])
+      )
+    });
+  }
+}
+google.maps.event.addDomListener(window, 'load', initialize);
     </script>
   </head>
 
   <body>
-    <div id="map-canvas"/>
-    <div class="container">
-      Why does this not show up?
+    <div id="logo-panel">
+      <span>
+        <a href="http://www.choiceomg.ca">
+        <h4>Created by</h4>
+        <img src="${request.static_url('mosp:static/CHOICE-Web-Design.png')}"
+             alt="CHOICE Web Design">
+        </a>
+      </span>
     </div>
+    <div id="map-canvas"/>
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->

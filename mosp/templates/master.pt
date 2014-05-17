@@ -1,28 +1,27 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
-       xmlns:tal="http://xml.zope.org/namespaces/tal"
-       xmlns:metal="http://xml.zope.org/namespaces/metal"
-       lang="${request.locale_name}">
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      lang="${request.locale_name}">
   <head>
-  <title>MosP: Mosquito Project</title>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="author" content="Brock Toews for CHOICE Web Marketing">
-  <meta name="keywords" content="mosquito forecast mosp project" />
-  <meta name="description" content="Mosquito Project: Mosquito activity forecast" />
-  
-  <link rel="shortcut icon"
-        href="${request.static_url('mosp:static/mosquito-dark.png')}" />
-  <link rel="stylesheet" 
-        href="${request.static_url('mosp:static/style.css')}" 
-        type="text/css" media="screen" charset="utf-8" />
-</head>
+    <title>MosP: Mosquito Project</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Brock Toews, for CHOICE Web Marketing">
+    <meta name="keywords" content="mosquito forecast mosp project" />
+    <meta name="description" content="Mosquito activity forecast" />
+    
+    <link rel="shortcut icon"
+          href="${request.static_url('mosp:static/mosquito-dark.png')}" />
+    <link rel="stylesheet" 
+          href="${request.static_url('mosp:static/theme.css')}" 
+          type="text/css" media="screen" charset="utf-8" />
+  </head>
 
-<body> 
-  <div metal:define-slot="content"></div>
+  <body> 
+    <div metal:define-slot="content"></div>
     <div id="footer">
       <span>Copyright &copy; 2014-2020, CHOICE Web Marketing</span>
     </div>
-  </div>
-</body>
+  </body>
 </html>

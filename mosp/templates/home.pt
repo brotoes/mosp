@@ -47,7 +47,7 @@
           <table>
             <tr tal:repeat="row range(len(locations))">
               <td tal:repeat="col 'City',">
-                <a href="${request.host_url}/${locations[row][0]}">
+                <a href="${request.host_url}/location/${locations[row][0]}">
                   ${locations[row][0]}
                 </a>
               </td>
