@@ -70,27 +70,13 @@ function initialize() {
     gauges.push(gauge);
   }
 
-  var counts = ${counts};
-  var max_count = 0;
-  for (var key in counts) {
-    if (counts[key] > max_count) {
-      max_count = counts[key];
-    }
-  }
-  console.log(counts);
   var quadrants = ${quadrants}
   for (var i = 0; i < ${len(quadrants)}; i ++) {
-    var count = counts[quadrants[i][4]]
-    var blue = count/max_count;
-    blue *= 255*blue*blue;
-    blue = Math.floor(blue);
-    blue = blue.toString(16);
-    blue = "#0000" + blue;
     var rectangle = new google.maps.Rectangle({
-      strokeColor: '#0000FF',
+      strokeColor: '#000000',
       strokeOpacity: 1,
-      strokeWeight: 2,
-      fillColor: blue,
+      strokeWeight: 1,
+      fillColor: '#000000',
       fillOpacity: 0,
       map: map,
       bounds: new google.maps.LatLngBounds(

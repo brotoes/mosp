@@ -37,8 +37,10 @@ def map(request):
     location = get_location(city)
     quadbounds = get_quadbounds(city)
     gauges = get_gauges(city)
+    rain_data = get_rainData('0000-00-00', '9999-12-31', city)
     readings = get_avgAmount()
-    counts = get_quadCount(city)
+
+    print get_maxTrap(city)
 
     if quadbounds == HTTPNotFound():
         return quadbounds
@@ -54,7 +56,6 @@ def map(request):
             'gauges':gauges,
             'readings':readings,
             'quadrants':quadbounds,
-            'counts':counts,
             'traps':traps,
             }
 

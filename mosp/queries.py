@@ -42,7 +42,7 @@ def get_trapData(start_date, end_date, location):
                             )
             traps = DBSession.query(
                                 Trap.date,
-                                func.sum(Trap.count),
+                                func.avg(Trap.count),
                             ).filter(
                                 Trap.date.between(start_date, end_date),
                                 Trap.region.in_(regions)
@@ -62,10 +62,60 @@ corresponds to a list of tuples of the form:
 (date, amount)
 where amount is the average rainfall for gauges of their quadrant
 """
-def get_rainData():
-    pass
+def get_rainData(start_date, end_date, location):
+    data = {}
+    try:
+        readings = DBSession.query(
+                                Gauge.quadrant,
+                                RainReading.date,
+                                func.avg(RainReading.amount),
+                            ).filter(
+                                Gauge.gauge_id==RainReading.gauge_id,
+                                func.lower(Gauge.location)==func.lower(location),
+                                func.lower(RainReading.location)==
+                                    func.lower(location),
+                                RainReading.date.between(start_date, end_date),
+                            ).group_by(
+                                Gauge.quadrant,
+                                RainReading.date,
+                            ).all()
+    except DBAPIError as e:
+        print e
+        return {}
 
-def get_quadCount(location):
+    for i in readings:
+        new_item = [str(i[1]), int(i[2])]
+        if i[0] in data:
+            data[i[0]].append(new_item)
+        else:
+            data[i[0]] = [new_item]
+
+    return data
+
+"""
+Returns all-time maximum mosquito count for all traps in location
+"""
+def get_maxTrap(location):
+    try:
+        max_count = DBSession.query(
+                                func.max(Trap.count)
+                            ).join(
+                                Region
+                            ).filter(
+                                func.lower(Region.location)==func.lower(location),
+                                Region.name==Trap.region,
+                            ).first()
+        max_count = int(max_count[0])
+    except DBAPIError as e:
+        print e
+        return 0
+
+    return max_count
+
+"""
+Returns all-time average rainfall for each quadrant in location
+"""
+def get_quadAvgRainfall(location):
     try:
         counts = DBSession.query(
                             Gauge.quadrant,
