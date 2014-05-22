@@ -20,6 +20,9 @@ def main(global_config, **settings):
     config.add_route('home', '/')
     config.add_route('map', '/location/{city}')
     config.add_route('refresh', '/refresh')
-    
+    config.add_route('dates', '/dates/{location}/{type}')
+    config.add_route('rainfall', '/rainfall/{city}/{date}')
+    config.add_route('traps', '/traps/{city}/{date}')
+
     config.scan()
     return config.make_wsgi_app()

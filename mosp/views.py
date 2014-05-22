@@ -20,27 +20,58 @@ from .models import (
 
 from open_data import *
 
+@view_config(route_name='dates', renderer='json')
+def dates(request):
+    date_type = request.matchdict['type']
+    location = request.matchdict['location']
+    dates = []
+
+    if date_type == 'rain':
+        dates = get_rainDates(location)
+    elif date_type == 'trap':
+        dates = get_trapDates(location)
+
+    return dates
+
+@view_config(route_name='rainfall', renderer='json')
+def rainfall(request):
+    city = request.matchdict['city']
+    date = request.matchdict['date']
+
+    return {'data':get_recentRainfall(city, date)}
+
+@view_config(route_name='traps', renderer='json')
+def traps(request):
+    city = request.matchdict['city']
+    date = request.matchdict['date']
+
+    return {'data':get_recentTrapCount(city, date)}
+
 @view_config(route_name='home', renderer='templates/home.pt')
 def home(request):
     #TODO get list of cities and return links
     locations = get_locations()
-    print locations
     return {'locations': locations}
 
 
 @view_config(route_name='map', renderer='templates/map.pt')
 def map(request):
     api_key = request.registry.settings['gmapv3']
-    
+   
+    start_date='0000-00-00'
+    end_date = '9999-12-21'
     city = request.matchdict['city']
-    traps = get_trapData('0000-00-00', '9999-12-31', city)
+    traps = get_trapData(start_date, end_date, city)
     location = get_location(city)
     quadbounds = get_quadbounds(city)
     gauges = get_gauges(city)
-    rain_data = get_rainData('0000-00-00', '9999-12-31', city)
+    rain_data = get_rainData(start_date, end_date, city)
     readings = get_avgAmount()
-
-    print get_maxTrap(city)
+    max_trap = get_maxTrap(city)
+    max_rain = get_maxRain(city)
+    recent_rainfall = get_recentRainfall(city, end_date)
+    recent_trapCount = get_recentTrapCount(city, end_date)
+    dates = get_dates(city)
 
     if quadbounds == HTTPNotFound():
         return quadbounds
@@ -51,12 +82,18 @@ def map(request):
         return HTTPNotFound()
 
     return {
+            'location':city,
+            'recent_rainfall':recent_rainfall,
+            'recent_trapCount':recent_trapCount,
             'api_key':api_key,
             'center':location,
             'gauges':gauges,
             'readings':readings,
             'quadrants':quadbounds,
             'traps':traps,
+            'max_trap':max_trap,
+            'max_rain':max_rain,
+            'dates':dates,
             }
 
 @view_config(route_name='refresh')
@@ -94,8 +131,6 @@ def refresh(request):
     last_date = None
     cur_counts = []
     for i in trap_data.data['data']:
-        print "LAST DATE:" + str(last_date)
-        print "i[8] (DATE)" + str(i[8])
         if last_date == i[8]:
             cur_counts = [cur_counts[j] + int(i[13:22][j] or 0) for j in range(len(cur_counts))]
         else:

@@ -11,10 +11,51 @@ from sqlalchemy.exc import(
                           )
 
 """
+returns list of all valid dates for location
+"""
+def get_dates(location):
+    trap = get_trapDates(location)
+    rain = get_rainDates(location)
+    return sorted(trap + rain)
+
+"""
 returns a list of valid dates for trap data
 """
 def get_trapDates(location):
-    pass
+    try:
+        dates = DBSession.query(
+                    Trap.date,
+                ).join(
+                    Region,
+                ).filter(
+                    Region.name==Trap.region,
+                    func.lower(Region.location)==func.lower(location),
+                ).distinct().all()
+    except DBAPIError as e:
+        print e
+        return []
+
+    dates = [str(i[0]) for i in dates]
+
+    return dates
+
+"""
+returns a list of valid dates for rain data
+"""
+def get_rainDates(location):
+    try:
+        dates = DBSession.query(
+                    RainReading.date,
+                ).filter(
+                    func.lower(RainReading.location)==func.lower(location),
+                ).distinct().all()
+    except DBAPIError as e:
+        print e
+        return []
+
+    dates = [str(i[0]) for i in dates]
+
+    return dates
 
 """
 returns timeline of mosquito trap data between start and end dates
@@ -97,21 +138,44 @@ Returns all-time maximum mosquito count for all traps in location
 """
 def get_maxTrap(location):
     try:
+        region_max = DBSession.query(
+                                Trap.region.label('r'),
+                                func.max(Trap.count).label('c'),
+                            ).group_by(Trap.region).subquery()
         max_count = DBSession.query(
-                                func.max(Trap.count)
-                            ).join(
-                                Region
+                                Region.quadrant,
+                                func.avg(region_max.c.c),
                             ).filter(
+                                Region.name==region_max.c.r,
                                 func.lower(Region.location)==func.lower(location),
-                                Region.name==Trap.region,
-                            ).first()
+                            ).group_by(
+                                Region.quadrant
+                            ).all()
+                            
+        max_count = [int(i[1]) for i in max_count]
+
+    except DBAPIError as e:
+        print e
+        return 0
+
+    return max(max_count)
+
+"""
+Returns all-time maximum rainfall for all gauges in location
+"""
+def get_maxRain(location):
+    try:
+        max_count = DBSession.query(
+                            func.max(RainReading.amount)
+                        ).filter(
+                            func.lower(RainReading.location)==func.lower(location),
+                        ).first()
         max_count = int(max_count[0])
     except DBAPIError as e:
         print e
         return 0
 
     return max_count
-
 """
 Returns all-time average rainfall for each quadrant in location
 """
@@ -134,6 +198,9 @@ def get_quadAvgRainfall(location):
 
     return count_dict
 
+"""
+Return average rainfall for all gauges
+"""
 def get_avgAmount():
     try:
         readings = DBSession.query(
@@ -148,6 +215,64 @@ def get_avgAmount():
 
     return readings
 
+"""
+returns most recent mosquito counts for all quadrants in an area before date
+"""
+def get_recentTrapCount(location, date):
+    try:
+        dates = DBSession.query(
+                    func.max(Trap.date).label('date'),
+                    Region.quadrant.label('quad'),
+                    Region.name.label('region'),
+                ).filter(
+                    Region.name==Trap.region,
+                    Trap.date <= date,
+                    func.lower(Region.location)==func.lower(location),
+                ).group_by(Trap.region).subquery()
+        
+        counts = DBSession.query(
+                    dates.c.date,
+                    dates.c.quad,
+                    Trap.count,
+                ).filter(
+                    Region.name==Trap.region,
+                    Trap.date==dates.c.date,
+                    Trap.region==dates.c.region,
+                ).all()
+    except DBAPIError as e:
+        print e
+        return []
+
+    counts = [[str(i[0]), str(i[1]), int(i[2])] for i in counts]
+
+    return counts
+
+"""
+returns rainfall of all gauges in a location, nearest before (or on)
+the given date
+"""
+def get_recentRainfall(location, date):
+    try:
+        dates = DBSession.query(
+                    RainReading.gauge_id,
+                    func.max(RainReading.date),
+                    RainReading.amount,
+                ).filter(
+                    func.lower(RainReading.location)==func.lower(location),
+                    RainReading.date <= date
+                ).group_by(RainReading.gauge_id).all()
+                    
+    except DBAPIError as e:
+        print e
+        return []
+
+    dates = [[int(i[0]), str(i[1]), int(i[2])] for i in dates]
+
+    return dates
+
+"""
+Return all gauges' information in location
+"""
 def get_gauges(location):
     try:
         gauges = DBSession.query(
@@ -168,6 +293,9 @@ def get_gauges(location):
 
     return gauges
 
+"""
+Return list of all valid location names
+"""
 def get_locations():
     try:
         locations = DBSession.query(
@@ -179,6 +307,9 @@ def get_locations():
 
     return locations
 
+"""
+Return coordinates cooresponding to location names
+"""
 def get_location(name):
     try:
         location = DBSession.query(
@@ -195,6 +326,9 @@ def get_location(name):
 
     return location
 
+"""
+Return list of quadrants and their coordinates
+"""
 def get_quadbounds(location):
     try:
         quads = DBSession.query(
@@ -275,6 +409,9 @@ def add_reading(data):
             reading = RainReading(gauge_id, 'Edmonton', date, amount)
             DBSession.add(reading)
 
+"""
+inserts trap data into traps table
+"""
 def add_trap(counts, raw_date):
     regions = ['rural northwest', 'rural northeast', 'rural southeast',
                'rivervalley east', 'rivervalley west', 'residential north',

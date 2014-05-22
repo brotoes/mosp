@@ -25,12 +25,22 @@
       html { height: 100% }
       body { height: 100%; margin: 0; padding: 0 }
       #map-canvas { height: 100% }
-      #logo-panel {
+      #control-panel {
         position: absolute;
         top: 5px;
-        left: 185px;
+        right: 5px;
+        left: 5px;
         color: #999;
-        margin-left: -180px;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+      }
+      #logo-panel {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+        color: #999;
         z-index: 5;
         background-color: #fff;
         padding: 5px;
@@ -39,73 +49,99 @@
     </style>
     <script type="text/javascript"
             src="https://maps.googleapis.com/maps/api/js?key=${api_key}&sensor=false">
+    
     </script>
-    <script type="text/javascript"> 
-function initialize() {
-  var location_center = new google.maps.LatLng(${center[0]}, ${center[1]});
-  var mapOptions = {
-    center: location_center,
-    zoom: 10,
-    scrollwheel: false,
-    disableDefaultUI: true,
-    draggable: false,
-    disableDoubleClickZoom: true
-  };
-  var map = new google.maps.Map(document.getElementById("map-canvas"),
-                                mapOptions);
-  var gauges = [];
-  var readings = ${readings};
-  var elements = ${gauges};
-  for (var i = 0; i < ${len(gauges)}; i ++) {
-    var element = elements[i]
-    var gauge = new google.maps.Marker({
-      position: new google.maps.LatLng(element[1], element[2]),
-      map: map,
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale:5
-      },
-      title: 'gauge-' + readings[i][1]
-    });
-    gauges.push(gauge);
-  }
+    <link rel="stylesheet" 
+          href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+    
+    <script src="${request.static_url('mosp:static/utilities.js')}"></script>
+    <script src="${request.static_url('mosp:static/map.js')}"></script>
 
-  var quadrants = ${quadrants}
-  for (var i = 0; i < ${len(quadrants)}; i ++) {
-    var rectangle = new google.maps.Rectangle({
-      strokeColor: '#000000',
-      strokeOpacity: 1,
-      strokeWeight: 1,
-      fillColor: '#000000',
-      fillOpacity: 0,
-      map: map,
-      bounds: new google.maps.LatLngBounds(
-        new google.maps.LatLng(quadrants[i][0], quadrants[i][1]),
-        new google.maps.LatLng(quadrants[i][2], quadrants[i][3])
-      )
-    });
-  }
-}
+    <script type="text/javascript">
+
+var map;
+var recent_rainfall;
+var recent_trapCount;
+var gauges = ${gauges};
+var max_rain = ${max_rain};
+var max_trap = ${max_trap};
+var readings = ${readings};
+var center = ${list(center)};
+var quadrants = ${quadrants};
+
+var circles = [];
+var rectangles = [];
+
+var selected_date = '9999-12-31';
+var url = "/rainfall/${location}/" + selected_date;
+url += "?t=" + Math.random(1000);
+$.getJSON(url, function(data) {
+  recent_rainfall = data.data;
+});
+var url = "/traps/${location}/" + selected_date;
+url += "?t=" + Math.random(1000);
+$.getJSON(url, function(data) {
+  recent_trapCount = data.data;
+});
+
+$(function() {
+  var select = $("#date");
+  var slider = $("<div id='slider'></div>").insertAfter(select).slider({
+    min: 0,
+    max: ${len(dates)},
+    range: "min",
+    value: select[0].selectedIndex + 1,
+    slide: function( event, ui ) {
+      select[0].selectedIndex = ui.value - 1;
+    },
+    stop: function(event, ui) {
+      var selected_date = select[0][select[0].selectedIndex].text;
+      var url = "/rainfall/${location}/" + selected_date;
+      url += "?t=" + Math.random(1000);
+      $.getJSON(url, function(data) {
+        recent_rainfall = data.data;
+      });
+      url = "/traps/${location}/" + selected_date;
+      url += "?t=" + Math.random(1000);
+      $.getJSON(url, function(data) {
+        recent_trapCount = data.data;
+      });
+      draw(window.map);
+    }
+  });
+  $("#date").change(function() {
+    slider.slider("value", this.selectedIndex + 1);
+  });
+});
 google.maps.event.addDomListener(window, 'load', initialize);
     </script>
   </head>
 
   <body>
+    <div id="control-panel">
+      <form id="data selection">
+        <label for="date">Date:</label>
+        <select name="date" id="date">
+        <option tal:repeat="item range(len(dates))" 
+                tal:content="dates[repeat.item.index]"></option>
+        </select>
+      </form>
+    </div>
     <div id="logo-panel">
-      <span>
-        <a href="http://www.choiceomg.ca">
-        <h4>Created by</h4>
-        <img src="${request.static_url('mosp:static/CHOICE-Web-Design.png')}"
-             alt="CHOICE Web Design">
-        </a>
-      </span>
+      <a href="http://www.choiceomg.ca">
+      <h4>Created by</h4>
+      <img src="${request.static_url('mosp:static/CHOICE-Web-Design.png')}"
+           alt="CHOICE Web Design">
+      </a>
     </div>
     <div id="map-canvas"/>
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="//oss.maxcdn.com/libs/jquery/1.10.2/jquery.min.js"></script>
+    <!--<script src="//oss.maxcdn.com/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="//oss.maxcdn.com/libs/twitter-bootstrap/3.0.3/js/bootstrap.min.js"></script>
-  
+  -->
   </body>
 </html>
