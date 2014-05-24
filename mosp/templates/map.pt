@@ -91,7 +91,6 @@ $(function() {
   var slider = $("<div id='slider'></div>").insertAfter(select).slider({
     min: 0,
     max: ${len(dates)},
-    range: "min",
     value: select[0].selectedIndex + 1,
     slide: function( event, ui ) {
       select[0].selectedIndex = ui.value - 1;
@@ -124,8 +123,9 @@ google.maps.event.addDomListener(window, 'load', initialize);
       <form id="data selection">
         <label for="date">Date:</label>
         <select name="date" id="date">
-        <option tal:repeat="item range(len(dates))" 
+        <option tal:repeat="item range(len(dates) - 1)" 
                 tal:content="dates[repeat.item.index]"></option>
+        <option selected>${dates[-1]}</option>
         </select>
       </form>
     </div>
